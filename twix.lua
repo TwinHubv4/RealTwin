@@ -1,199 +1,130 @@
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
+-- // Twix Hub 🗹 // --
+-- Clean dark-blue UI with gradient --
 
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local ScreenGui = Instance.new("ScreenGui")
+local Main = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local Status = Instance.new("TextLabel")
+local FreezeLabel = Instance.new("TextLabel")
+local AutoLabel = Instance.new("TextLabel")
+local FreezeButton = Instance.new("TextButton")
+local AutoButton = Instance.new("TextButton")
+local Gradient = Instance.new("UIGradient")
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "TradeHelperUI"
-screenGui.Parent = playerGui
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+-- // Parent
+ScreenGui.Parent = game.CoreGui
 
-local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 280, 0, 160)
-mainFrame.Position = UDim2.new(0.5, -140, 0.3, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(15, 25, 60) -- dark blue base
-mainFrame.BorderSizePixel = 0
-mainFrame.ClipsDescendants = false
-mainFrame.Parent = screenGui
+-- // Main Frame
+Main.Parent = ScreenGui
+Main.BackgroundColor3 = Color3.fromRGB(15, 25, 60)
+Main.BorderSizePixel = 0
+Main.Position = UDim2.new(0.35, 0, 0.25, 0)
+Main.Size = UDim2.new(0, 220, 0, 140)
+Main.BackgroundTransparency = 0.05
+Main.Active = true
+Main.Draggable = true
+Main.ClipsDescendants = true
+Main.Name = "TwixHubMain"
 
-local corner = Instance.new("UICorner")
+-- Rounded corners
+local corner = Instance.new("UICorner", Main)
 corner.CornerRadius = UDim.new(0, 12)
-corner.Parent = mainFrame
 
-local shadow = Instance.new("Frame")
-shadow.Name = "Shadow"
-shadow.Size = UDim2.new(1, 6, 1, 6)
-shadow.Position = UDim2.new(0, -3, 0, -3)
-shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-shadow.BackgroundTransparency = 0.6
-shadow.BorderSizePixel = 0
-shadow.ZIndex = mainFrame.ZIndex - 1
-shadow.Parent = mainFrame
-
-local shadowCorner = Instance.new("UICorner")
-shadowCorner.CornerRadius = UDim.new(0, 15)
-shadowCorner.Parent = shadow
-
-local gradient = Instance.new("UIGradient")
-gradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 45, 90)), -- top dark blue
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 20, 40))  -- bottom darker blue
+-- Gradient background
+Gradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 45, 90)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 20, 40))
 }
-gradient.Rotation = 45
-gradient.Parent = mainFrame
+Gradient.Rotation = 90
+Gradient.Parent = Main
 
--- 🔹 Title changed here
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Name = "Title"
-titleLabel.Size = UDim2.new(1, -20, 0, 30)
-titleLabel.Position = UDim2.new(0, 10, 0, 8)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "Twix Hub 🗹"
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.TextScaled = true
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.Parent = mainFrame
+-- // Title
+Title.Parent = Main
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, 0, 0, 28)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "⚡ Twix Hub 🗹 ⚡"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 17
+Title.TextStrokeTransparency = 0.8
 
-local statusLabel = Instance.new("TextLabel")
-statusLabel.Name = "Status"
-statusLabel.Size = UDim2.new(1, -20, 0, 20)
-statusLabel.Position = UDim2.new(0, 10, 0, 35)
-statusLabel.BackgroundTransparency = 1
-statusLabel.Text = "Not in trade"
-statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-statusLabel.TextScaled = true
-statusLabel.Font = Enum.Font.Gotham
-statusLabel.Parent = mainFrame
+-- // Status
+Status.Parent = Main
+Status.BackgroundTransparency = 1
+Status.Position = UDim2.new(0.06, 0, 0.25, 0)
+Status.Size = UDim2.new(0, 200, 0, 20)
+Status.Font = Enum.Font.Gotham
+Status.Text = "Status: Not in trade"
+Status.TextColor3 = Color3.fromRGB(210, 210, 210)
+Status.TextSize = 14
+Status.TextXAlignment = Enum.TextXAlignment.Left
 
-local function createToggle(name, position, enabled)
-    local toggleFrame = Instance.new("Frame")
-    toggleFrame.Name = name .. "Toggle"
-    toggleFrame.Size = UDim2.new(0, 240, 0, 35)
-    toggleFrame.Position = position
-    toggleFrame.BackgroundColor3 = Color3.fromRGB(30, 50, 100) -- dark blue shade
-    toggleFrame.BorderSizePixel = 0
-    toggleFrame.Parent = mainFrame
-    
-    local toggleCorner = Instance.new("UICorner")
-    toggleCorner.CornerRadius = UDim.new(0, 8)
-    toggleCorner.Parent = toggleFrame
-    
-    local label = Instance.new("TextLabel")
-    label.Name = "Label"
-    label.Size = UDim2.new(0, 140, 1, 0)
-    label.Position = UDim2.new(0, 10, 0, 0)
-    label.BackgroundTransparency = 1
-    label.Text = name
-    label.TextColor3 = enabled and Color3.fromRGB(100, 255, 150) or Color3.fromRGB(200, 200, 220)
-    label.TextScaled = true
-    label.Font = Enum.Font.Gotham
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = toggleFrame
-    
-    local switch = Instance.new("Frame")
-    switch.Name = "Switch"
-    switch.Size = UDim2.new(0, 60, 0, 22)
-    switch.Position = UDim2.new(1, -70, 0.5, -11)
-    switch.BackgroundColor3 = enabled and Color3.fromRGB(50, 200, 100) or Color3.fromRGB(50, 60, 90)
-    switch.BorderSizePixel = 0
-    switch.Parent = toggleFrame
-    
-    local switchCorner = Instance.new("UICorner")
-    switchCorner.CornerRadius = UDim.new(0, 11)
-    switchCorner.Parent = switch
-    
-    local knob = Instance.new("Frame")
-    knob.Name = "Knob"
-    knob.Size = UDim2.new(0, 18, 0, 18)
-    knob.Position = enabled and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)
-    knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    knob.BorderSizePixel = 0
-    knob.Parent = switch
-    
-    local knobCorner = Instance.new("UICorner")
-    knobCorner.CornerRadius = UDim.new(0, 9)
-    knobCorner.Parent = knob
-    
-    local button = Instance.new("TextButton")
-    button.Name = "Button"
-    button.Size = UDim2.new(1, 0, 1, 0)
-    button.BackgroundTransparency = 1
-    button.Text = ""
-    button.Parent = toggleFrame
-    
-    return {
-        frame = toggleFrame,
-        switch = switch,
-        knob = knob,
-        label = label,
-        button = button,
-        enabled = enabled
-    }
-end
+-- // Freeze Label
+FreezeLabel.Parent = Main
+FreezeLabel.BackgroundTransparency = 1
+FreezeLabel.Position = UDim2.new(0.06, 0, 0.45, 0)
+FreezeLabel.Size = UDim2.new(0, 100, 0, 20)
+FreezeLabel.Font = Enum.Font.Gotham
+FreezeLabel.Text = "Freeze Trade:"
+FreezeLabel.TextColor3 = Color3.fromRGB(210, 210, 210)
+FreezeLabel.TextSize = 14
+FreezeLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-local freezeToggle = createToggle("Freeze Trade", UDim2.new(0, 20, 0, 65), false)
-local forceToggle = createToggle("Force Accept", UDim2.new(0, 20, 0, 110), false)
+-- // Freeze Button
+FreezeButton.Parent = Main
+FreezeButton.BackgroundColor3 = Color3.fromRGB(80, 40, 50)
+FreezeButton.Position = UDim2.new(0.65, 0, 0.45, 0)
+FreezeButton.Size = UDim2.new(0, 60, 0, 22)
+FreezeButton.Font = Enum.Font.GothamBold
+FreezeButton.Text = "OFF"
+FreezeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+FreezeButton.TextSize = 13
+Instance.new("UICorner", FreezeButton)
 
-local inTrade = false
-local tradingPartner = ""
-local tradeConnection
+-- // Auto Label
+AutoLabel.Parent = Main
+AutoLabel.BackgroundTransparency = 1
+AutoLabel.Position = UDim2.new(0.06, 0, 0.65, 0)
+AutoLabel.Size = UDim2.new(0, 100, 0, 20)
+AutoLabel.Font = Enum.Font.Gotham
+AutoLabel.Text = "Auto Accept:"
+AutoLabel.TextColor3 = Color3.fromRGB(210, 210, 210)
+AutoLabel.TextSize = 14
+AutoLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-local function animateToggle(toggle, enabled)
-    local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    
-    local switchTween = TweenService:Create(toggle.switch, tweenInfo, {
-        BackgroundColor3 = enabled and Color3.fromRGB(50, 200, 100) or Color3.fromRGB(50, 60, 90)
-    })
-    
-    local knobTween = TweenService:Create(toggle.knob, tweenInfo, {
-        Position = enabled and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)
-    })
-    
-    local labelTween = TweenService:Create(toggle.label, tweenInfo, {
-        TextColor3 = enabled and Color3.fromRGB(100, 255, 150) or Color3.fromRGB(200, 200, 220)
-    })
-    
-    switchTween:Play()
-    knobTween:Play()
-    labelTween:Play()
-end
+-- // Auto Button
+AutoButton.Parent = Main
+AutoButton.BackgroundColor3 = Color3.fromRGB(80, 40, 50)
+AutoButton.Position = UDim2.new(0.65, 0, 0.65, 0)
+AutoButton.Size = UDim2.new(0, 60, 0, 22)
+AutoButton.Font = Enum.Font.GothamBold
+AutoButton.Text = "OFF"
+AutoButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoButton.TextSize = 13
+Instance.new("UICorner", AutoButton)
 
-local function showNotification(text, color)
-    local notif = Instance.new("Frame")
-    notif.Size = UDim2.new(0, 200, 0, 40)
-    notif.Position = UDim2.new(0.5, -100, 1, 10)
-    notif.BackgroundColor3 = color or Color3.fromRGB(30, 50, 100)
-    notif.BorderSizePixel = 0
-    notif.Parent = mainFrame
-    
-    local notifCorner = Instance.new("UICorner")
-    notifCorner.CornerRadius = UDim.new(0, 8)
-    notifCorner.Parent = notif
-    
-    local notifText = Instance.new("TextLabel")
-    notifText.Size = UDim2.new(1, -10, 1, 0)
-    notifText.Position = UDim2.new(0, 5, 0, 0)
-    notifText.BackgroundTransparency = 1
-    notifText.Text = text
-    notifText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    notifText.TextScaled = true
-    notifText.Font = Enum.Font.Gotham
-    notifText.Parent = notif
-    
-    local showTween = TweenService:Create(notif, TweenInfo.new(0.3), {Position = UDim2.new(0.5, -100, 1, -50)})
-    showTween:Play()
-    
-    wait(2)
-    
-    local hideTween = TweenService:Create(notif, TweenInfo.new(0.3), {Position = UDim2.new(0.5, -100, 1, 10)})
-    hideTween:Play()
-    hideTween.Completed:Connect(function()
-        notif:Destroy()
-    end)
-end
+-- // Functionality
+local freezeEnabled = false
+local autoEnabled = false
 
--- (Rest of your script stays identical)
+FreezeButton.MouseButton1Click:Connect(function()
+	freezeEnabled = not freezeEnabled
+	if freezeEnabled then
+		FreezeButton.Text = "ON"
+		FreezeButton.BackgroundColor3 = Color3.fromRGB(60, 130, 255)
+	else
+		FreezeButton.Text = "OFF"
+		FreezeButton.BackgroundColor3 = Color3.fromRGB(80, 40, 50)
+	end
+end)
+
+AutoButton.MouseButton1Click:Connect(function()
+	autoEnabled = not autoEnabled
+	if autoEnabled then
+		AutoButton.Text = "ON"
+		AutoButton.BackgroundColor3 = Color3.fromRGB(60, 130, 255)
+	else
+		AutoButton.Text = "OFF"
+		AutoButton.BackgroundColor3 = Color3.fromRGB(80, 40, 50)
+	end
+end)
