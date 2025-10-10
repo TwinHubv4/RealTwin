@@ -133,21 +133,25 @@ AutoButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- // Victim Name Detection
+-- // Victim Name Detection (Dynamic Scan)
 task.spawn(function()
-	local tradeGui = playerGui:WaitForChild("TradeUI", 10) -- ⚠️ Replace "TradeUI" if your trade GUI has a different name
+	local tradeGui = playerGui:WaitForChild("TradeUI", 10) -- Change if needed
 	if not tradeGui then return end
 
 	tradeGui:GetPropertyChangedSignal("Visible"):Connect(function()
 		if tradeGui.Visible then
-			local victimName = nil
-			pcall(function()
-				-- ⚠️ Replace this path with your actual GUI path to the victim's name label
-				victimName = tradeGui.Frame.Right.PlayerName.Text
-			end)
+			local foundName = nil
 
-			if victimName and victimName ~= "" then
-				Status.Text = "Victim: " .. victimName
+			-- Search for a TextLabel that is not the local player's name
+			for _, v in ipairs(tradeGui:GetDescendants()) do
+				if v:IsA("TextLabel") and v.Visible and v.Text ~= localPlayer.Name and #v.Text > 2 then
+					foundName = v.Text
+					break
+				end
+			end
+
+			if foundName then
+				Status.Text = "Victim: " .. foundName
 			else
 				Status.Text = "Status: In trade"
 			end
