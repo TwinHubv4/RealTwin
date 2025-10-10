@@ -1,6 +1,10 @@
 -- // Twix Hub 🗹 // --
 -- Clean dark-blue UI with gradient --
 
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+local playerGui = localPlayer:WaitForChild("PlayerGui")
+
 local ScreenGui = Instance.new("ScreenGui")
 local Main = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
@@ -127,4 +131,28 @@ AutoButton.MouseButton1Click:Connect(function()
 		AutoButton.Text = "OFF"
 		AutoButton.BackgroundColor3 = Color3.fromRGB(80, 40, 50)
 	end
+end)
+
+-- // Victim Name Detection
+task.spawn(function()
+	local tradeGui = playerGui:WaitForChild("TradeUI", 10) -- ⚠️ Replace "TradeUI" if your trade GUI has a different name
+	if not tradeGui then return end
+
+	tradeGui:GetPropertyChangedSignal("Visible"):Connect(function()
+		if tradeGui.Visible then
+			local victimName = nil
+			pcall(function()
+				-- ⚠️ Replace this path with your actual GUI path to the victim's name label
+				victimName = tradeGui.Frame.Right.PlayerName.Text
+			end)
+
+			if victimName and victimName ~= "" then
+				Status.Text = "Victim: " .. victimName
+			else
+				Status.Text = "Status: In trade"
+			end
+		else
+			Status.Text = "Status: Not in trade"
+		end
+	end)
 end)
